@@ -1,0 +1,48 @@
+name: 编译打包ipk
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'mihomo/**'
+      - 'luci-app-mihomo/**'
+
+jobs:
+  build:
+    name: ${{ matrix.arch }} 编译
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch:
+          - aarch64_cortex-a53
+          - aarch64_generic
+          - x86_64
+        tag:
+          - openwrt-23.05
+
+    steps:
+      - name: 项目检查
+        uses: actions/checkout@main
+
+      - name: 开始编译插件
+        uses: openwrt/gh-action-sdk@main
+        env:
+          ARCH: ${{ matrix.arch }}-${{ matrix.tag }}
+          FEEDNAME: mihomo
+          PACKAGES: luci-app-mihomo
+          NO_REFRESH_CHECK: true
+
+      - name: 上传插件
+        uses: rmoyulong/action-gh-release@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ matrix.arch }}
+          files: bin/packages/${{ matrix.arch }}/mihomo/*.ipk
+          body: |
+            =============基本信息============
+            平台：${{ matrix.arch }}
+            编译时间：$(date +%Y%m%d%H%M%S)
