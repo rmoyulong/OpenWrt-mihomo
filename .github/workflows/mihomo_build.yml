@@ -34,7 +34,14 @@ jobs:
           FEEDNAME: mihomo
           PACKAGES: luci-app-mihomo
           NO_REFRESH_CHECK: true
-
+          
+      - name: 整理变量
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        run: |
+          ipk_time=$(date +%Y%m%d%H%M%S)
+          echo "ipk_time=$ipk_time" >> $GITHUB_ENV
+       
       - name: 上传插件
         uses: rmoyulong/action-gh-release@master
         env:
@@ -44,5 +51,5 @@ jobs:
           files: bin/packages/${{ matrix.arch }}/mihomo/*.ipk
           body: |
             =============基本信息============
-            平台：${{ matrix.arch }}
-            编译时间：$(date +%Y%m%d%H%M%S)
+            适用平台：${{ matrix.arch }}
+            编译时间：${{ env.ipk_time }}
