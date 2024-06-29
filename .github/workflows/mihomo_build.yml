@@ -39,7 +39,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
         run: |
-          ipk_time=$(date +%Y%m%d%H%M%S)
+          ipk_time=$(TZ=UTC-8 date +"%y.%m.%d_%H.%M.%S")
           echo "ipk_time=$ipk_time" >> $GITHUB_ENV
        
       - name: 上传插件
