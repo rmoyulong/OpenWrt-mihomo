@@ -19,7 +19,7 @@ jobs:
         arch:
           - aarch64_cortex-a53
           - aarch64_generic
-          - x86_64
+          - arm_cortex-a5_vfpv4
         tag:
           - openwrt-23.05
 
