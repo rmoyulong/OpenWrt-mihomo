@@ -1,13 +1,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=mihomo
-PKG_VERSION:=1.18.5
+PKG_VERSION:=1.18.6
 PKG_RELEASE:=$(shell date +%s)
 PKG_BUILD_TIME=$(shell date -u -Iseconds)
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/metacubex/mihomo/tar.gz/v$(PKG_VERSION)?
-PKG_HASH:=463f54384a144b63e499db44e3383c7a412a1572809053a42810e4c154b51f5e
+PKG_HASH:=b8f343a02e873d632fb488537f7d1bd2c63af1654075143678570ba848a45df5
 
 PKG_BUILD_DEPENDS:=golang/host
 PKG_BUILD_PARALLEL:=1
@@ -46,6 +46,7 @@ define Package/mihomo/install
 	$(INSTALL_DIR) $(1)/etc/mihomo/run/rules
 	$(INSTALL_DIR) $(1)/etc/mihomo/run/ui
 
+	$(INSTALL_BIN) $(CURDIR)/files/profile_watcher.sh $(1)/etc/mihomo/profile_watcher.sh
 	$(INSTALL_BIN) $(CURDIR)/files/upnp_lease_watcher.sh $(1)/etc/mihomo/upnp_lease_watcher.sh
 	$(INSTALL_BIN) $(CURDIR)/files/hijack.nft $(1)/etc/mihomo/hijack.nft
 	$(INSTALL_DATA) $(CURDIR)/files/mixin.yaml $(1)/etc/mihomo/mixin.yaml
