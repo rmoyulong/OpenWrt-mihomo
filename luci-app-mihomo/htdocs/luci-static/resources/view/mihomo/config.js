@@ -25,10 +25,6 @@ function listProfiles() {
     return L.resolveDefault(fs.list(profilesDir), []);
 }
 
-function getProfile() {
-    return L.resolveDefault(fs.exec_direct('yq', ['-M', '-o', 'json', runProfilePath], 'json'), {});
-}
-
 async function getServiceStatus() {
     try {
         return (await callServiceList('mihomo'))['mihomo']['instances']['core']['running'];
@@ -37,10 +33,22 @@ async function getServiceStatus() {
     }
 }
 
+function getAppVersion() {
+    return L.resolveDefault(fs.exec_direct('/usr/libexec/mihomo-call', ['version', 'app']));
+}
+
+function getCoreVersion() {
+    return L.resolveDefault(fs.exec_direct('/usr/libexec/mihomo-call', ['version', 'core']));
+}
+
+function loadProfile() {
+    return L.resolveDefault(fs.exec_direct('/usr/libexec/mihomo-call', ['load', 'profile'], 'json'), {});
+}
+
 async function openDashboard(type) {
     const running = await getServiceStatus();
     if (running) {
-        const profile = await getProfile();
+        const profile = await loadProfile();
         const apiListen = profile['external-controller'];
         if (apiListen) {
             const apiPort = apiListen.split(':')[1];
@@ -65,11 +73,15 @@ async function openDashboard(type) {
 }
 
 function renderStatus(running) {
-    if (running) {
-        return E('span', { style: 'color: green; font-style: italic; font-weight: bold' }, _('Running'));
-    } else {
-        return E('span', { style: 'color: red; font-style: italic; font-weight: bold' }, _('Not Running'));
+    return updateStatus(E('input', { id: 'core_status', style: 'border: unset; font-style: italic; font-weight: bold;', readonly: '' }), running);
+}
+
+function updateStatus(element, running) {
+    if (element) {
+        element.style.color = running ? 'green' : 'red';
+        element.value = running ? _('Running') : _('Not Running');
     }
+    return element;
 }
 
 return view.extend({
@@ -77,32 +89,45 @@ return view.extend({
         return Promise.all([
             loadConfig(),
             listProfiles(),
+            getAppVersion(),
+            getCoreVersion(),
             getServiceStatus(),
         ]);
     },
     render: function (data) {
         const subscriptions = uci.sections('mihomo', 'subscription');
         const profiles = data[1];
-        const running = data[2];
+        const appVersion = data[2];
+        const coreVersion = data[3];
+        const running = data[4];
 
         let m, s, o, so;
 
         m = new form.Map('mihomo', _('Mihomo'), _('Mihomo is a rule based proxy in Go.'));
 
-        s = m.section(form.NamedSection, 'config', 'config', _('Basic Config'));
+        s = m.section(form.NamedSection, 'status', 'status', _('Status'));
 
-        o = s.option(form.DummyValue, '_status', _('Status'));
+        o = s.option(form.DummyValue, '_app_version', _('App Version'));
         o.cfgvalue = function (section_id) {
-            return E('div', { id: 'status' }, [renderStatus(running)]);
+            return E('input', { style: 'border: unset;', readonly: 'readonly', value: appVersion.trim() });
+        };
+
+        o = s.option(form.DummyValue, '_core_version', _('Core Version'));
+        o.cfgvalue = function (section_id) {
+            return E('input', { style: 'border: unset;', readonly: 'readonly', value: coreVersion.trim() });
+        };
+
+        o = s.option(form.DummyValue, '_core_status', _('Core Status'));
+        o.cfgvalue = function (section_id) {
+            return renderStatus(running);
         };
         poll.add(function () {
             return L.resolveDefault(getServiceStatus()).then(function (running) {
-                const element = document.getElementById("status");
-                if (element) {
-                    element.replaceChildren(renderStatus(running));
-                }
+                updateStatus(document.getElementById('core_status'), running);
             });
         });
+
+        s = m.section(form.NamedSection, 'config', 'config', _('Basic Config'));
 
         o = s.option(form.Flag, 'enabled', _('Enable'));
         o.rmempty = false;
@@ -161,6 +186,11 @@ return view.extend({
         o.depends({ 'transparent_proxy': '1', 'access_control_mode': 'block' });
 
         o = s.option(form.Flag, 'dns_hijack', _('DNS Hijack'), _('When disabled, DNS request will not redirect to core, you need handle this by yourself!'));
+        o.retain = true;
+        o.rmempty = false;
+        o.depends('transparent_proxy', '1');
+
+        o = s.option(form.Flag, 'bypass_china_mainland_ip', _('Bypass China Mainland IP'), _('This option does not work well with Fake-IP.'));
         o.retain = true;
         o.rmempty = false;
         o.depends('transparent_proxy', '1');
@@ -488,7 +518,7 @@ return view.extend({
         o = s.taboption('mixin_file_content', form.TextValue, '_mixin_file_content', null, _('The file\'s content above will be merged into profile before other mixin config(means low priority), and it will overwrite the same field in the profile.'));
         o.rows = 20;
         o.cfgvalue = function (section_id) {
-            return L.resolveDefault(fs.read(mixinPath));
+            return L.resolveDefault(fs.read_direct(mixinPath));
         };
         o.write = function (section_id, formvalue) {
             return fs.write(mixinPath, formvalue);
