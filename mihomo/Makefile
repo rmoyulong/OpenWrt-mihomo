@@ -1,13 +1,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=mihomo
-PKG_VERSION:=1.18.6
-PKG_RELEASE:=138
+PKG_VERSION:=1.18.7
+PKG_RELEASE:=141
 PKG_BUILD_TIME=$(shell date -u -Iseconds)
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/metacubex/mihomo/tar.gz/v$(PKG_VERSION)?
-PKG_HASH:=b8f343a02e873d632fb488537f7d1bd2c63af1654075143678570ba848a45df5
+PKG_HASH:=e4ff0d1a8762ff3e259e4999d9808b353c7a58a1dcabe87dccc9c91bdb6814c7
 
 PKG_BUILD_DEPENDS:=golang/host
 PKG_BUILD_PARALLEL:=1
@@ -49,7 +49,9 @@ define Package/mihomo/install
 	$(INSTALL_BIN) $(CURDIR)/files/profile_watcher.sh $(1)/etc/mihomo/profile_watcher.sh
 	$(INSTALL_BIN) $(CURDIR)/files/upnp_lease_watcher.sh $(1)/etc/mihomo/upnp_lease_watcher.sh
 	$(INSTALL_BIN) $(CURDIR)/files/hijack.nft $(1)/etc/mihomo/hijack.nft
-	$(INSTALL_BIN) $(CURDIR)/files/geoip-ipv4-cn.nft $(1)/etc/mihomo/geoip-ipv4-cn.nft
+	$(INSTALL_BIN) $(CURDIR)/files/hijack6.nft $(1)/etc/mihomo/hijack6.nft
+	$(INSTALL_BIN) $(CURDIR)/files/geoip-cn.nft $(1)/etc/mihomo/geoip-cn.nft
+	$(INSTALL_BIN) $(CURDIR)/files/geoip6-cn.nft $(1)/etc/mihomo/geoip6-cn.nft
 	$(INSTALL_DATA) $(CURDIR)/files/mixin.yaml $(1)/etc/mihomo/mixin.yaml
 
 	$(INSTALL_DIR) $(1)/etc/config
