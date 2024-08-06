@@ -1,6 +1,6 @@
 #!/bin/sh
 
-. /lib/functions.sh
+. $IPKG_INSTROOT/lib/functions.sh
 
 load_config() {
 	config_load mihomo
@@ -20,6 +20,7 @@ fi
 profile_path="${profile/file:/}"
 
 while true; do
-	inotifywait -e create,modify --include $(basename "$profile_path") $(dirname "$profile_path")
-	reload_mihomo
+	if (inotifywait -t 300 -e create,modify --include "$(basename "$profile_path")" "$(dirname "$profile_path")"); then
+		reload_mihomo
+	fi
 done
