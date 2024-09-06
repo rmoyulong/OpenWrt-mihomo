@@ -1,13 +1,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=mihomo
-PKG_RELEASE:=2
+PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://github.com/MetaCubeX/mihomo.git
-PKG_SOURCE_DATE:=2024-08-26
-PKG_SOURCE_VERSION:=6e04e1e9dc0916621beb1f8cdccced2fad5eb8f8
-PKG_MIRROR_HASH:=3d16d9b5304b73b56dc97e4692f570efaf51ba82dc40fa66827dde96c324557b
+PKG_SOURCE_DATE:=2024-09-03
+PKG_SOURCE_VERSION:=faaa90f8a621499ba86f8734a05bb80edb38ada9
+PKG_MIRROR_HASH:=9ad1a13c2353010aa95a208c3dd984cb13c2f226cfb9f69c15465095734caf79
 
 PKG_LICENSE:=MIT
 PKG_MAINTAINER:=Joseph Mory <morytyann@gmail.com>
@@ -42,6 +42,8 @@ endef
 define Package/mihomo/conffiles
 /etc/config/mihomo
 /etc/mihomo/mixin.yaml
+/etc/mihomo/nftables/reserved_ip.nft
+/etc/mihomo/nftables/reserved_ip6.nft
 endef
 
 define Package/mihomo/install
@@ -61,6 +63,8 @@ define Package/mihomo/install
 	$(INSTALL_BIN) $(CURDIR)/files/scripts/tun.sh $(1)/etc/mihomo/scripts/tun.sh
 
 	$(INSTALL_BIN) $(CURDIR)/files/nftables/hijack.nft $(1)/etc/mihomo/nftables/hijack.nft
+	$(INSTALL_BIN) $(CURDIR)/files/nftables/reserved_ip.nft $(1)/etc/mihomo/nftables/reserved_ip.nft
+	$(INSTALL_BIN) $(CURDIR)/files/nftables/reserved_ip6.nft $(1)/etc/mihomo/nftables/reserved_ip6.nft
 	$(INSTALL_BIN) $(CURDIR)/files/nftables/geoip_cn.nft $(1)/etc/mihomo/nftables/geoip_cn.nft
 	$(INSTALL_BIN) $(CURDIR)/files/nftables/geoip6_cn.nft $(1)/etc/mihomo/nftables/geoip6_cn.nft
 
@@ -76,6 +80,9 @@ define Package/mihomo/install
 
 	$(INSTALL_DIR) $(1)/etc/capabilities
 	$(INSTALL_DATA) $(CURDIR)/files/capabilities.json $(1)/etc/capabilities/mihomo.json
+
+	$(INSTALL_DIR) $(1)/lib/upgrade/keep.d
+	$(INSTALL_DATA) $(CURDIR)/files/mihomo.upgrade $(1)/lib/upgrade/keep.d/mihomo
 endef
 
 define Build/Prepare
