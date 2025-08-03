@@ -193,9 +193,9 @@ service_started() {
 	# load config
 	config_load nikki
 	# check if proxy enabled
-	local enabled
-	config_get_bool enabled "proxy" "enabled" 0
-	if [ "$enabled" = 0 ]; then
+	local proxy_enabled
+	config_get_bool proxy_enabled "proxy" "enabled" 0
+	if [ "$proxy_enabled" = 0 ]; then
 		log "Proxy" "Disabled."
 		return
 	fi
