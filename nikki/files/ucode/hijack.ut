@@ -68,6 +68,8 @@
 		push(lan_access_control, access_control);
 	});
 
+	const reserved_ip = uci_array(uci.get('momo', 'proxy', 'reserved_ip'));
+	const reserved_ip6 = uci_array(uci.get('momo', 'proxy', 'reserved_ip6'));
 	const bypass_dscp = uci_array(uci.get('nikki', 'proxy', 'bypass_dscp'));
 	const bypass_china_mainland_ip = uci_bool(uci.get('nikki', 'proxy', 'bypass_china_mainland_ip'));
 	const proxy_tcp_dport = split((uci.get('nikki', 'proxy', 'proxy_tcp_dport') ?? '0-65535'), ' ');
@@ -128,12 +130,22 @@ table inet nikki {
 		type ipv4_addr
 		flags interval
 		auto-merge
+		{% if (length(reserved_ip) > 0): %}
+		elements = {
+			{{ join(', ', reserved_ip) }}
+		}
+		{% endif %}
 	}
 
 	set reserved_ip6 {
 		type ipv6_addr
 		flags interval
 		auto-merge
+		{% if (length(reserved_ip6) > 0): %}
+		elements = {
+			{{ join(', ', reserved_ip6) }}
+		}
+		{% endif %}
 	}
 
 	set lan_inbound_device {
@@ -499,9 +511,6 @@ table inet nikki {
 	}
 	{% endif %}
 }
-
-include "/etc/nikki/nftables/reserved_ip.nft"
-include "/etc/nikki/nftables/reserved_ip6.nft"
 
 {% if (bypass_china_mainland_ip): %}
 include "/etc/nikki/nftables/geoip_cn.nft"
