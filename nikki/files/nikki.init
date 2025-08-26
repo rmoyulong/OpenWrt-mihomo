@@ -155,7 +155,7 @@ start_service() {
 	if [ "$core_only" = 0 ] && [ "$proxy_enabled" = 1 ]; then
 		log "Profile" "Checking..."
 		if [ "$ipv4_dns_hijack" = 1 ] || [ "$ipv6_dns_hijack" = 1 ]; then
-			if (! yq -M -e 'has("dns") and (.dns | .enable) and (.dns | has("listen"))' "$RUN_PROFILE_PATH"); then
+			if yq -M -e '(has("dns") and (.dns | .enable) and (.dns | has("listen"))) | not' "$RUN_PROFILE_PATH" > /dev/null 2>&1; then
 				log "Profile" "Check failed."
 				log "Profile" "DNS should be enabled and listen should be defined."
 				log "App" "Exit."
@@ -163,7 +163,7 @@ start_service() {
 			fi
 		fi
 		if [ "$tcp_mode" = "redirect" ]; then
-			if (! yq -M -e 'has("redir-port")' "$RUN_PROFILE_PATH"); then
+			if yq -M -e '(has("redir-port")) | not' "$RUN_PROFILE_PATH" > /dev/null 2>&1; then
 				log "Profile" "Check failed."
 				log "Profile" "Redirect Port should be defined."
 				log "App" "Exit."
@@ -171,7 +171,7 @@ start_service() {
 			fi
 		fi
 		if [ "$tcp_mode" = "tproxy" ] || [ "$udp_mode" = "tproxy" ]; then
-			if (! yq -M -e 'has("tproxy-port")' "$RUN_PROFILE_PATH"); then
+			if yq -M -e '(has("tproxy-port")) | not' "$RUN_PROFILE_PATH" > /dev/null 2>&1; then
 				log "Profile" "Check failed."
 				log "Profile" "TPROXY Port should be defined."
 				log "App" "Exit."
@@ -179,7 +179,7 @@ start_service() {
 			fi
 		fi
 		if [ "$tcp_mode" = "tun" ] || [ "$udp_mode" = "tun" ]; then
-			if (! yq -M -e 'has("tun") and (.tun | .enable) and (.tun | has("device"))' "$RUN_PROFILE_PATH"); then
+			if yq -M -e '(has("tun") and (.tun | .enable) and (.tun | has("device"))) | not' "$RUN_PROFILE_PATH" > /dev/null 2>&1; then
 				log "Profile" "Check failed."
 				log "Profile" "TUN should be enabled and device should be defined."
 				log "App" "Exit."
